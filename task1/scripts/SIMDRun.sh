@@ -65,7 +65,7 @@ echo "Hardware prefetcher disabled."
 # Create CSV
 # =========================================================
 
-echo "matrix_size,simd_register_width,instructions,speedup" > "$CSV"
+echo "matrix_size,simd_register_width,instructions,l1d_misses,speedup" > "$CSV"
 
 
 # =========================================================
@@ -119,6 +119,7 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
         sudo perf stat \
             -e cpu_core/cycles/ \
             -e cpu_core/instructions/ \
+            -e cpu_core/l1d_miss.load/ \
             "$PROJECT_DIR/bin/conv" simd "$MATRIXSIZE" "$MATRIXSIZE" 9 50 \
             > "$OUTPUT" 2>&1
 
@@ -140,6 +141,15 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
 
 
         # -------------------------------------------------
+        # Extract L1-D misses
+        # -------------------------------------------------
+
+        L1D_MISSES=$(grep 'cpu_core/l1d_miss.load' "$OUTPUT" \
+            | sed 's/,//g' \
+            | awk '{print $1}')
+
+
+        # -------------------------------------------------
         # Extract speedup
         # -------------------------------------------------
 
@@ -151,11 +161,12 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
         # Save to CSV
         # -------------------------------------------------
 
-        echo "$MATRIXSIZE,$REGWIDTH,$INSTRUCTIONS,$SPEEDUP" >> "$CSV"
+        echo "$MATRIXSIZE,$REGWIDTH,$INSTRUCTIONS,$L1D_MISSES,$SPEEDUP" >> "$CSV"
 
         echo ""
         echo "Captured:"
         echo "  Instructions : $INSTRUCTIONS"
+        echo "  L1-D Misses  : $L1D_MISSES"
         echo "  Speedup      : $SPEEDUP"
 
         rm -f "$OUTPUT"
