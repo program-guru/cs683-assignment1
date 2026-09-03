@@ -1,14 +1,17 @@
 #!/bin/bash
 
-SOURCE="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task1/src/conv_tile.cpp"
+SOURCE="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task1/src/conv_simd.cpp"
 PROJECT_DIR="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task1"
 DISABLE_PREFETCH="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/MSR Handling/disable_prefetch.sh"
 RESTORE_MSR="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/MSR Handling/restore_msr.sh"
 
-CSV="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task1/results/tile_results.csv"
+CSV="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task1/results/simd_results.csv"
 
 MATRIX_SIZES=(256 512 752 1024 1256 1504 1752 2048)
-TILE_SIZES=(8 16 32 64 128 256 512 1024)
+
+# SIMD register widths to sweep, mapped to the is_simd_256 boolean
+# 128 -> false (SSE), 256 -> true (AVX2)
+REGISTER_WIDTHS=(128 256)
 
 
 # =========================================================
@@ -62,7 +65,7 @@ echo "Hardware prefetcher disabled."
 # Create CSV
 # =========================================================
 
-echo "matrix_size,tile_size,instructions,l1d_misses,speedup" > "$CSV"
+echo "matrix_size,simd_register_width,instructions,speedup" > "$CSV"
 
 
 # =========================================================
@@ -71,22 +74,28 @@ echo "matrix_size,tile_size,instructions,l1d_misses,speedup" > "$CSV"
 
 for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
 
-    for TILESIZE in "${TILE_SIZES[@]}"; do
+    for REGWIDTH in "${REGISTER_WIDTHS[@]}"; do
 
         echo ""
         echo "=============================================="
-        echo "MATRIXSIZE=$MATRIXSIZE  TILESIZE=$TILESIZE"
+        echo "MATRIXSIZE=$MATRIXSIZE  SIMD_REGISTER_WIDTH=$REGWIDTH"
         echo "=============================================="
 
         # -------------------------------------------------
-        # Change tile size
+        # Change SIMD register width (is_simd_256 flag)
         # -------------------------------------------------
 
+        if [ "$REGWIDTH" -eq 256 ]; then
+            IS_SIMD_256="true"
+        else
+            IS_SIMD_256="false"
+        fi
+
         sed -i \
-            "s/const int tile_size = [0-9]*;  \\/\\/ tile size for cache tiling/const int tile_size = ${TILESIZE};  \\/\\/ tile size for cache tiling/" \
+            "s/const bool is_simd_256 = [a-z]*;  \\/\\/ Set to true to use AVX2 (256-bit) intrinsics, false for SSE (128-bit)/const bool is_simd_256 = ${IS_SIMD_256};  \\/\\/ Set to true to use AVX2 (256-bit) intrinsics, false for SSE (128-bit)/" \
             "$SOURCE"
 
-        echo "Tile size changed to $TILESIZE"
+        echo "SIMD register width changed to $REGWIDTH-bit (is_simd_256=$IS_SIMD_256)"
 
 
         # -------------------------------------------------
@@ -96,7 +105,7 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
         echo "Running make..."
 
         if ! make -C "$PROJECT_DIR"; then
-            echo "ERROR: make failed for MATRIXSIZE=$MATRIXSIZE TILESIZE=$TILESIZE"
+            echo "ERROR: make failed for MATRIXSIZE=$MATRIXSIZE REGWIDTH=$REGWIDTH"
             continue
         fi
 
@@ -110,8 +119,7 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
         sudo perf stat \
             -e cpu_core/cycles/ \
             -e cpu_core/instructions/ \
-            -e cpu_core/l1d_miss.load/ \
-            "$PROJECT_DIR/bin/conv" tile "$MATRIXSIZE" "$MATRIXSIZE" 9 50 \
+            "$PROJECT_DIR/bin/conv" simd "$MATRIXSIZE" "$MATRIXSIZE" 9 50 \
             > "$OUTPUT" 2>&1
 
 
@@ -132,19 +140,10 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
 
 
         # -------------------------------------------------
-        # Extract L1-D misses
-        # -------------------------------------------------
-
-        L1D_MISSES=$(grep 'cpu_core/l1d_miss.load' "$OUTPUT" \
-            | sed 's/,//g' \
-            | awk '{print $1}')
-
-
-        # -------------------------------------------------
         # Extract speedup
         # -------------------------------------------------
 
-        SPEEDUP=$(grep '^tile' "$OUTPUT" \
+        SPEEDUP=$(grep '^simd' "$OUTPUT" \
             | awk '{gsub(/x$/, "", $5); print $5}')
 
 
@@ -152,12 +151,11 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
         # Save to CSV
         # -------------------------------------------------
 
-        echo "$MATRIXSIZE,$TILESIZE,$INSTRUCTIONS,$L1D_MISSES,$SPEEDUP" >> "$CSV"
+        echo "$MATRIXSIZE,$REGWIDTH,$INSTRUCTIONS,$SPEEDUP" >> "$CSV"
 
         echo ""
         echo "Captured:"
         echo "  Instructions : $INSTRUCTIONS"
-        echo "  L1-D misses  : $L1D_MISSES"
         echo "  Speedup      : $SPEEDUP"
 
         rm -f "$OUTPUT"
