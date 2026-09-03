@@ -6,7 +6,7 @@ void conv_tile(const float* in, float* out, const float* ker,
                int H, int W, int K) {
     const int p = K / 2;
     const int in_stride = W + 2 * p;  // padded row stride
-    const int tile_size = 8;  // tile size for cache tiling
+    const int tile_size = 1024;  // tile size for cache tiling
 
     for (int oy = 0; oy < H; oy += tile_size) {
         for (int ox = 0; ox < W; ox += tile_size) {
