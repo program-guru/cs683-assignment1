@@ -9,13 +9,12 @@ void conv_reorder(const float* in, float* out, const float* ker,
     const int p = K / 2;
     const int in_stride = W + 2 * p;
 
-    for (int i = 0; i < H * W; ++i) out[i] = 0.0f; 
-
     for (int ky = 0; ky < K; ++ky) {
         for (int kx = 0; kx < K; ++kx) {
             const float w = ker[ky * K + kx];   
             for (int oy = 0; oy < H; ++oy) {
                 for (int ox = 0; ox < W; ++ox) {
+                    if(ky == 0 && kx == 0) out[oy * W + ox] = 0.0f; // Initialize output for the first kernel element
                     out[oy * W + ox] += w * in[(oy + ky) * in_stride + (ox + kx)];
                 }
             }
