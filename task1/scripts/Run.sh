@@ -86,17 +86,6 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
     echo "OPERATION=$OPERATION  MATRIXSIZE=$MATRIXSIZE"
     echo "=============================================="
 
-    # -------------------------------------------------
-    # Build
-    # -------------------------------------------------
-
-    echo "Running make..."
-
-    if ! make -C "$PROJECT_DIR"; then
-        echo "ERROR: make failed for OPERATION=$OPERATION MATRIXSIZE=$MATRIXSIZE"
-        continue
-    fi
-
 
     # -------------------------------------------------
     # Run perf
