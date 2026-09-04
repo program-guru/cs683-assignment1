@@ -5,12 +5,12 @@ PROJECT_DIR="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task2"
 DISABLE_PREFETCH="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/MSR Handling/disable_prefetch.sh"
 RESTORE_MSR="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/MSR Handling/restore_msr.sh"
 
-CSV="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task2/results/SMID_results.csv"
+CSV="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task2/results/simd_results.csv"
 
 # 1. Define the parameters to sweep
 MATRIX_SIZES=(256 512 752 1024 1256 1504 1752 2048)
 
-REGISTER_WIDTHS=(128 256 512)
+REGISTER_WIDTHS=(128 256)
 
 
 # =========================================================
@@ -64,7 +64,7 @@ echo "Hardware prefetcher disabled."
 # Create CSV
 # =========================================================
 
-echo "matrix_size,simd_register_width,instructions,l1d_misses,speedup" > "$CSV"
+echo "matrix_size,simd_register_width,instructions,speedup" > "$CSV"
 
 # =========================================================
 # Run experiments
@@ -80,9 +80,6 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
         elif [ "$REGWIDTH" -eq 256 ]; then
             PREFIX="_mm256_"
             DIST=8
-        elif [ "$REGWIDTH" -eq 512 ]; then
-            PREFIX="_mm512_"
-            DIST=16
         fi
 
         echo -n "Building Size: ${MATRIXSIZE} | SIMD: ${REGWIDTH}-bit ... "
@@ -118,7 +115,7 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
         sudo perf stat \
             -e cpu_core/cycles/ \
             -e cpu_core/instructions/ \
-            "$PROJECT_DIR/bin/conv" simd "$MATRIXSIZE" "$MATRIXSIZE" 9 50 \
+            "$PROJECT_DIR/bin/matmul" simd "$MATRIXSIZE" "$MATRIXSIZE" 9 50 \
             > "$OUTPUT" 2>&1
 
 
