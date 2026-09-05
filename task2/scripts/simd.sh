@@ -14,7 +14,7 @@ REGISTER_WIDTHS=(128 256)
 
 
 # =========================================================
-# Restore hardware prefetcher on exit
+# Restore hardware prefetcher and source file on exit
 # =========================================================
 
 cleanup() {
@@ -24,12 +24,12 @@ cleanup() {
     echo "=============================================="
 
     bash "$RESTORE_MSR"
+    git checkout -- "$SOURCE"
 
-    echo "Hardware prefetcher restored."
+    echo "Hardware prefetcher and source file restored."
 }
 
-# Make sure restore_msr.sh runs when script exits,
-# including Ctrl+C
+# Make sure cleanup runs when script exits, including Ctrl+C
 trap cleanup EXIT
 
 
@@ -73,6 +73,9 @@ echo "matrix_size,simd_register_width,instructions,speedup" > "$CSV"
 for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
     for REGWIDTH in "${REGISTER_WIDTHS[@]}"; do
         
+        # Reset source file to clean template before applying mutations
+        git checkout -- "$SOURCE"
+
         # 2. Map the width to the correct C++ intrinsics and distance
         if [ "$REGWIDTH" -eq 128 ]; then
             PREFIX="_mm_"
@@ -85,13 +88,8 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
         echo -n "Building Size: ${MATRIXSIZE} | SIMD: ${REGWIDTH}-bit ... "
 
         # 3. Execute the sed mutations
-        # Change the data type (e.g., __m256 -> __m128)
         sed -i -E "s/__m(128|256|512)/__m${REGWIDTH}/g" "$SOURCE"
-        
-        # Change the function prefix (e.g., _mm256_loadu_ps -> _mm_loadu_ps)
         sed -i -E "s/_mm(256|512)?_/${PREFIX}/g" "$SOURCE"
-        
-        # Change the dist variable
         sed -i -E "s/int dist = (4|8|16);/int dist = ${DIST};/g" "$SOURCE"
 
         # -------------------------------------------------
@@ -107,7 +105,7 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
 
 
         # -------------------------------------------------
-        # Run perf
+        # Run perf (Fixed K dimension to scale with MATRIXSIZE)
         # -------------------------------------------------
 
         OUTPUT=$(mktemp)
@@ -115,7 +113,7 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
         sudo perf stat \
             -e cpu_core/cycles/ \
             -e cpu_core/instructions/ \
-            "$PROJECT_DIR/bin/matmul" simd "$MATRIXSIZE" "$MATRIXSIZE" 9 50 \
+            "$PROJECT_DIR/bin/matmul" simd "$MATRIXSIZE" "$MATRIXSIZE" "$MATRIXSIZE" 50 \
             > "$OUTPUT" 2>&1
 
 
@@ -173,6 +171,3 @@ echo "=============================================="
 echo ""
 echo "Results:"
 cat "$CSV"
-
-echo ""
-echo "Hardware prefetcher will now be restored."
