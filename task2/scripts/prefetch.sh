@@ -50,15 +50,15 @@ echo "Hardware prefetcher disabled."
 # =========================================================
 # Create CSV
 # =========================================================
-# ADDED cache_level TO HEADER
-echo "matrix_size,prefetch_distance,cache_level,instructions,speedup" > "$CSV"
+# FIX 1: ADDED l1d_misses TO THE HEADER
+echo "matrix_size,prefetch_distance,cache_level,instructions,l1d_misses,speedup" > "$CSV"
 
 # =========================================================
 # Run experiments
 # =========================================================
 for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
     for DIST in "${PREFETCH_DISTANCES[@]}"; do
-        for C_LEVEL in "${CACHE_LEVELS[@]}"; do # NEW LOOP FOR CACHE LEVEL
+        for C_LEVEL in "${CACHE_LEVELS[@]}"; do
             
             # Reset source file to clean template before applying mutations
             git checkout -- "$SOURCE"
@@ -82,9 +82,12 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
             # Run perf
             # -------------------------------------------------
             OUTPUT=$(mktemp)
+            
+            # FIX 2: ADDED THE L1D MISS EVENT TO PERF STAT
             sudo perf stat \
                 -e cpu_core/cycles/ \
                 -e cpu_core/instructions/ \
+                -e cpu_core/l1d_miss.load \
                 "$PROJECT_DIR/bin/matmul" prefetch "$MATRIXSIZE" "$MATRIXSIZE" "$MATRIXSIZE" 50 \
                 > "$OUTPUT" 2>&1
 
@@ -98,11 +101,9 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
             # -------------------------------------------------
             INSTRUCTIONS=$(grep 'cpu_core/instructions' "$OUTPUT" | sed 's/,//g' | awk '{print $1}')
             SPEEDUP=$(grep '^prefetch' "$OUTPUT" | awk '{gsub(/x$/, "", $5); print $5}')
-            L1D_MISSES=$(grep 'cpu_core/l1d_miss.load' "$OUTPUT" \
-            | sed 's/,//g' \
-            | awk '{print $1}')
-
             
+            # Extract L1D misses
+            L1D_MISSES=$(grep 'cpu_core/l1d_miss.load' "$OUTPUT" | sed 's/,//g' | awk '{print $1}')
 
             # -------------------------------------------------
             # Save to CSV
