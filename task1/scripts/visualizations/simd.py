@@ -1,3 +1,4 @@
+from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -432,7 +433,8 @@ def plot_simd(naive_df, simd_df):
     plt.tight_layout(
         w_pad=3.0,
         h_pad=3.0,
-        rect=[0, 0, 1, 0.96]
+        rect=(0, 0, 1, 0.96)
     )
-
-    plt.show()
+    
+    output_path = Path(__file__).resolve().parents[2] / 'results' / 'simd_analysis.png'
+    fig.savefig(output_path, dpi=300, bbox_inches='tight')

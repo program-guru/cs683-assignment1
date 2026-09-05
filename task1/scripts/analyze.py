@@ -1,5 +1,5 @@
 from Process import preprocess_data
-
+from visualizations.naive import plot_naive
 from visualizations.reorder import plot_reorder
 from visualizations.simd import plot_simd
 from visualizations.tiling import plot_tile
@@ -81,4 +81,7 @@ plot_tile(
 plot_simd(
     naive_df,
     simd_df
+)
+plot_naive(
+    naive_df
 )

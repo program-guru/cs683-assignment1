@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from pathlib import Path
 
 
 def plot_reorder(naive_df, reorder_df):
@@ -256,4 +257,5 @@ def plot_reorder(naive_df, reorder_df):
         rect=(0, 0, 1, 0.96)
     )
 
-    plt.show()
+    output_path = Path(__file__).resolve().parents[2] / 'results' / 'reorder_analysis.png'
+    fig.savefig(output_path, dpi=300, bbox_inches='tight')
