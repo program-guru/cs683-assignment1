@@ -21,13 +21,26 @@ void matmul_prefetch(const float* A, const float* B, float* C,
             for(int i = i_blk; i < i_max; ++i) {
                 for(int j = j_blk; j < j_max; ++j) {
                     
-                    __m256 sum_vec = _mm256_setzero_ps();
+                    __m256 sum_vec1 = _mm256_setzero_ps();
+                    __m256 sum_vec2 = _mm256_setzero_ps();
                     int p = 0;
                     
-                    for(; p <= K - 8; p += 8) {
+                    for(; p <= K - 16; p += 16) {
                         __builtin_prefetch(&A[i * lda + p + p_dist], 0, 1);
                         __builtin_prefetch(&B[j * ldb + p + p_dist], 0, 1);
                         
+                        __m256 vec_a1 = _mm256_loadu_ps(&A[i * lda + p]);
+                        __m256 vec_b1 = _mm256_loadu_ps(&B[j * ldb + p]);
+                        sum_vec1 = _mm256_fmadd_ps(vec_a1, vec_b1, sum_vec1);
+
+                        __m256 vec_a2 = _mm256_loadu_ps(&A[i * lda + p + 8]);
+                        __m256 vec_b2 = _mm256_loadu_ps(&B[j * ldb + p + 8]);
+                        sum_vec2 = _mm256_fmadd_ps(vec_a2, vec_b2, sum_vec2);
+                    }
+                    
+                    __m256 sum_vec = _mm256_add_ps(sum_vec1, sum_vec2);
+
+                    for(; p <= K - 8; p += 8) {
                         __m256 vec_a = _mm256_loadu_ps(&A[i * lda + p]);
                         __m256 vec_b = _mm256_loadu_ps(&B[j * ldb + p]);
                         sum_vec = _mm256_fmadd_ps(vec_a, vec_b, sum_vec);
