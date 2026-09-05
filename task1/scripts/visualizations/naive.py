@@ -208,7 +208,7 @@ def plot_naive(naive_df):
     plt.tight_layout(
         w_pad=3.0,
         h_pad=3.0,
-        rect=[0, 0, 1, 0.96]
+        rect=(0, 0, 1, 0.96)
     )
 
     plt.show()

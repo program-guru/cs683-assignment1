@@ -32,7 +32,7 @@ def plot_tile(naive_df, tile_df):
 
     tile_df['miss_increase'] = (
         (
-            tile_df['l1d_misses (combined)']
+            tile_df['l1d_misses (actual)']
             - tile_df['naive_misses']
         )
         / tile_df['naive_misses']
@@ -49,7 +49,7 @@ def plot_tile(naive_df, tile_df):
             avg_speedup=('speedup', 'mean'),
             avg_mpki=('mpki', 'mean'),
             avg_misses=(
-                'l1d_misses (combined)',
+                'l1d_misses (actual)',
                 'mean'
             )
         )

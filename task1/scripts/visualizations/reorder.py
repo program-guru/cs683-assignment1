@@ -28,7 +28,7 @@ def plot_reorder(naive_df, reorder_df):
     )
 
     comparison_df['reorder_misses'] = (
-        reorder_df['l1d_misses (combined)'].values
+        reorder_df['l1d_misses (actual)'].values
     )
 
     comparison_df['naive_instructions'] = (
@@ -36,7 +36,7 @@ def plot_reorder(naive_df, reorder_df):
     )
 
     comparison_df['reorder_instructions'] = (
-        reorder_df['instructions (combined)'].values
+        reorder_df['instructions (actual)'].values
     )
 
     comparison_df['speedup'] = reorder_df['speedup'].values
@@ -253,7 +253,7 @@ def plot_reorder(naive_df, reorder_df):
     plt.tight_layout(
         w_pad=3.0,
         h_pad=3.0,
-        rect=[0, 0, 1, 0.96]
+        rect=(0, 0, 1, 0.96)
     )
 
     plt.show()

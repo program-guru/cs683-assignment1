@@ -66,46 +66,19 @@ print(unroll_df)
 # ============================================================
 # Generate Visualizations
 # ============================================================
-print("=======================Choose your visualization=======================")
-a=(int)(input("1.Reorder\n2.Unroll\n3.Tile\n4.SIMD\n5.All\nChoose: "))
-
-if(a==1):
-    plot_reorder(
-        naive_df,
-        reorder_df
-    )
-if(a==2):
-    plot_unroll(
-        naive_df,
-        unroll_df
-    )
-if(a==3):
-    plot_tile(
-        naive_df,
-        tile_df
-    )
-if(a==4):
-    plot_simd(
-        naive_df,
-        simd_df
-    )
-if(a==5):
-    plot_reorder(
-            naive_df,
-            reorder_df
-        )
-    plot_unroll(
-            naive_df,
-            unroll_df
-        )
-    plot_tile(
-            naive_df,
-            tile_df
-        )
-    plot_simd(
-            naive_df,
-            simd_df
-    )
-
-
-
+plot_reorder(
+    naive_df,
+    reorder_df
+)
+plot_unroll(
+    naive_df,
+    unroll_df
+)
+plot_tile(
+    naive_df,
+    tile_df
+)
+plot_simd(
+    naive_df,
+    simd_df
+)

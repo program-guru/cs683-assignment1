@@ -6,7 +6,13 @@ import os
 # Configuration
 # ============================================================
 
-DATA_DIR = '../results'
+DATA_DIR = os.path.abspath(
+    os.path.join(
+        os.path.dirname(__file__),
+        '..',
+        'results'
+    )
+)
 
 
 # ============================================================
@@ -104,7 +110,6 @@ def preprocess_data():
         naive_df['l1d_misses (combined)'] * 1000
     ) / naive_df['instructions (combined)']
 
-
     # --------------------------------------------------------
     # Naive lookup maps
     # --------------------------------------------------------
@@ -140,17 +145,20 @@ def preprocess_data():
             df['instructions (combined)']
             - df['matrix_size'].map(naive_inst_map)
         )
+        df['instructions (actual)'] = df['instructions (actual)'].clip(lower=1)
 
         # Actual L1-D misses
         df['l1d_misses (actual)'] = (
             df['l1d_misses (combined)']
             - df['matrix_size'].map(naive_misses_map)
         )
+        df['l1d_misses (actual)'] = df['l1d_misses (actual)'].clip(lower=0)
 
         # MPKI
         df['mpki'] = (
             df['l1d_misses (actual)'] * 1000
         ) / df['instructions (actual)']
+        df['mpki'] = df['mpki'].clip(lower=0)
 
 
     return {

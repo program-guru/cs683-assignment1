@@ -40,7 +40,7 @@ def plot_unroll(naive_df, unroll_df):
     )
 
     comparison_df['unroll_misses'] = (
-        unroll_df['l1d_misses (combined)'].values
+        unroll_df['l1d_misses (actual)'].values
     )
 
     comparison_df['naive_instructions'] = (
@@ -48,7 +48,7 @@ def plot_unroll(naive_df, unroll_df):
     )
 
     comparison_df['unroll_instructions'] = (
-        unroll_df['instructions (combined)'].values
+        unroll_df['instructions (actual)'].values
     )
 
     comparison_df['speedup'] = (
