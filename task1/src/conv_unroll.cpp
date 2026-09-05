@@ -10,14 +10,14 @@ void conv_unroll(const float* in, float* out, const float* ker,
         for (int ox = 0; ox < W; ++ox) {
             float acc = 0.0f;
             for (int ky = 0; ky < K; ++ky) {
-                for (int kx = 0; kx < K; kx += 3) {
+                const int kend = K - (K % 3);
+                for (int kx = 0; kx < kend; kx += 3) {
                     acc += in[(oy + ky) * in_stride + (ox + kx)] * ker[ky * K + kx];
-                    if(kx + 1 < K) {
-                        acc += in[(oy + ky) * in_stride + (ox + kx + 1)] * ker[ky * K + kx + 1];
-                    }
-                    if(kx + 2 < K) {
-                        acc += in[(oy + ky) * in_stride + (ox + kx + 2)] * ker[ky * K + kx + 2];
-                    }
+                    acc += in[(oy + ky) * in_stride + (ox + kx + 1)] * ker[ky * K + kx + 1];
+                    acc += in[(oy + ky) * in_stride + (ox + kx + 2)] * ker[ky * K + kx + 2];
+                }
+                for (int kx = kend; kx < K; ++kx) {
+                    acc += in[(oy + ky) * in_stride + (ox + kx)] * ker[ky * K + kx];
                 }
             }
             out[oy * W + ox] = acc;
