@@ -9,7 +9,6 @@ CSV="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task2/results/si
 
 # 1. Define the parameters to sweep
 MATRIX_SIZES=(256 512 752 1024 1256 1504 1752 2048)
-
 REGISTER_WIDTHS=(128 256)
 
 
@@ -61,10 +60,11 @@ echo "Hardware prefetcher disabled."
 
 
 # =========================================================
-# Create CSV
+# Create CSV (Added naive_instructions and simd_instructions)
 # =========================================================
 
-echo "matrix_size,simd_register_width,instructions,speedup" > "$CSV"
+mkdir -p "${PROJECT_DIR}/results"
+echo "matrix_size,simd_register_width,naive_instructions,simd_instructions,naive_time,simd_time,speedup" > "$CSV"
 
 # =========================================================
 # Run experiments
@@ -105,39 +105,48 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
 
 
         # -------------------------------------------------
-        # Run perf (Fixed K dimension to scale with MATRIXSIZE)
+        # Run perf for NAIVE implementation
         # -------------------------------------------------
 
-        OUTPUT=$(mktemp)
+        NAIVE_OUTPUT=$(mktemp)
+
+        sudo perf stat \
+            -e cpu_core/cycles/ \
+            -e cpu_core/instructions/ \
+            "$PROJECT_DIR/bin/matmul" naive "$MATRIXSIZE" "$MATRIXSIZE" "$MATRIXSIZE" 50 \
+            > "$NAIVE_OUTPUT" 2>&1
+
+        NAIVE_INSTRUCTIONS=$(grep 'cpu_core/instructions' "$NAIVE_OUTPUT" \
+            | sed 's/,//g' \
+            | awk '{print $1}')
+
+        NAIVE_TIME=$(grep '^naive' "$NAIVE_OUTPUT" \
+            | awk '{print $4}')
+
+
+        # -------------------------------------------------
+        # Run perf for SIMD implementation
+        # -------------------------------------------------
+
+        SIMD_OUTPUT=$(mktemp)
 
         sudo perf stat \
             -e cpu_core/cycles/ \
             -e cpu_core/instructions/ \
             "$PROJECT_DIR/bin/matmul" simd "$MATRIXSIZE" "$MATRIXSIZE" "$MATRIXSIZE" 50 \
-            > "$OUTPUT" 2>&1
+            > "$SIMD_OUTPUT" 2>&1
 
+        # Display SIMD output
+        cat "$SIMD_OUTPUT"
 
-        # -------------------------------------------------
-        # Display output
-        # -------------------------------------------------
-
-        cat "$OUTPUT"
-
-
-        # -------------------------------------------------
-        # Extract instructions
-        # -------------------------------------------------
-
-        INSTRUCTIONS=$(grep 'cpu_core/instructions' "$OUTPUT" \
+        SIMD_INSTRUCTIONS=$(grep 'cpu_core/instructions' "$SIMD_OUTPUT" \
             | sed 's/,//g' \
             | awk '{print $1}')
 
+        SIMD_TIME=$(grep '^simd' "$SIMD_OUTPUT" \
+            | awk '{print $3}')
 
-        # -------------------------------------------------
-        # Extract speedup
-        # -------------------------------------------------
-
-        SPEEDUP=$(grep '^simd' "$OUTPUT" \
+        SPEEDUP=$(grep '^simd' "$SIMD_OUTPUT" \
             | awk '{gsub(/x$/, "", $5); print $5}')
 
 
@@ -145,14 +154,17 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
         # Save to CSV
         # -------------------------------------------------
 
-        echo "$MATRIXSIZE,$REGWIDTH,$INSTRUCTIONS,$SPEEDUP" >> "$CSV"
+        echo "$MATRIXSIZE,$REGWIDTH,$NAIVE_INSTRUCTIONS,$SIMD_INSTRUCTIONS,$NAIVE_TIME,$SIMD_TIME,$SPEEDUP" >> "$CSV"
 
         echo ""
         echo "Captured:"
-        echo "  Instructions : $INSTRUCTIONS"
-        echo "  Speedup      : $SPEEDUP"
+        echo "  Naive Instructions : $NAIVE_INSTRUCTIONS"
+        echo "  SIMD Instructions  : $SIMD_INSTRUCTIONS"
+        echo "  Naive Time         : $NAIVE_TIME ms"
+        echo "  SIMD Time          : $SIMD_TIME ms"
+        echo "  Speedup            : $SPEEDUP"
 
-        rm -f "$OUTPUT"
+        rm -f "$NAIVE_OUTPUT" "$SIMD_OUTPUT"
 
     done
 
