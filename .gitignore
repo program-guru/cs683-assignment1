@@ -1,5 +1,6 @@
 bin/
 solution/
+results/
 *.csv
 *.pyc
 *.png

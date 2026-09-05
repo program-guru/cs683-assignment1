@@ -1,8 +1,10 @@
 #!/bin/bash
 
-bash "/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task1/scripts/GeneralRun.sh" naive
-bash "/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task1/scripts/GeneralRun.sh" reorder
-bash "/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task1/scripts/GeneralRun.sh" unroll
-bash "/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task1/scripts/SIMDRun.sh"
-bash "/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task1/scripts/TileRun.sh"
-python3 "/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task1/scripts/analyze.py"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+bash "$SCRIPT_DIR/GeneralRun.sh" naive
+bash "$SCRIPT_DIR/GeneralRun.sh" reorder
+bash "$SCRIPT_DIR/GeneralRun.sh" unroll
+bash "$SCRIPT_DIR/SIMDRun.sh"
+bash "$SCRIPT_DIR/TileRun.sh"
+python3 "$SCRIPT_DIR/analyze.py"

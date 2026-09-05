@@ -12,7 +12,8 @@ fi
 
 OPERATION="$1"
 
-PROJECT_DIR="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task1"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 CSV="${PROJECT_DIR}/results/${OPERATION}_results.csv"
 
 MATRIX_SIZES=(256 512 752 1024 1256 1504 1752 2048)

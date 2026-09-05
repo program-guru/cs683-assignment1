@@ -1,8 +1,9 @@
 #!/bin/bash
 
-SOURCE="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task1/src/conv_simd.cpp"
-PROJECT_DIR="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task1"
-CSV="/home/shivam/Documents/IIT Bombay/CS 683/cs683-assignment1/task1/results/simd_results.csv"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+SOURCE="$PROJECT_DIR/src/conv_simd.cpp"
+CSV="$PROJECT_DIR/results/simd_results.csv"
 
 MATRIX_SIZES=(256 512 752 1024 1256 1504 1752 2048)
 
