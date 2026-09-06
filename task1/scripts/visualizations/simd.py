@@ -87,6 +87,30 @@ def plot_simd(naive_df, simd_df):
         simd256['mpki'].values
     )
 
+    comparison_df['naive_miss_rate'] = (
+        naive_df['miss_rate'].values
+    )
+
+    comparison_df['simd128_miss_rate'] = (
+        simd128['miss_rate'].values
+    )
+
+    comparison_df['simd256_miss_rate'] = (
+        simd256['miss_rate'].values
+    )
+
+    comparison_df['naive_loads'] = (
+        naive_df['l1d_loads (combined)'].values
+    )
+
+    comparison_df['simd128_loads'] = (
+        simd128['l1d_loads (actual)'].values
+    )
+
+    comparison_df['simd256_loads'] = (
+        simd256['l1d_loads (actual)'].values
+    )
+
     comparison_df['simd128_speedup'] = (
         simd128['speedup'].values
     )

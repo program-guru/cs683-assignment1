@@ -35,12 +35,28 @@ def plot_unroll(naive_df, unroll_df):
         unroll_df['mpki'].values
     )
 
+    comparison_df['naive_miss_rate'] = (
+        naive_df['miss_rate'].values
+    )
+
+    comparison_df['unroll_miss_rate'] = (
+        unroll_df['miss_rate'].values
+    )
+
     comparison_df['naive_misses'] = (
         naive_df['l1d_misses (combined)'].values
     )
 
     comparison_df['unroll_misses'] = (
         unroll_df['l1d_misses (actual)'].values
+    )
+
+    comparison_df['naive_loads'] = (
+        naive_df['l1d_loads (combined)'].values
+    )
+
+    comparison_df['unroll_loads'] = (
+        unroll_df['l1d_loads (actual)'].values
     )
 
     comparison_df['naive_instructions'] = (
@@ -66,6 +82,15 @@ def plot_unroll(naive_df, unroll_df):
             - comparison_df['unroll_mpki']
         )
         / comparison_df['naive_mpki']
+    ) * 100
+
+    comparison_df['miss_rate_reduction'] = (
+        (
+            comparison_df['naive_miss_rate']
+            - comparison_df['unroll_miss_rate']
+        )
+        .div(comparison_df['naive_miss_rate'])
+        .where(comparison_df['naive_miss_rate'] != 0, 0.0)
     ) * 100
 
     # Cache miss reduction percentage

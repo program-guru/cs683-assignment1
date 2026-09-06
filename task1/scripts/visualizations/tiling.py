@@ -48,8 +48,13 @@ def plot_tile(naive_df, tile_df):
         .agg(
             avg_speedup=('speedup', 'mean'),
             avg_mpki=('mpki', 'mean'),
+            avg_miss_rate=('miss_rate', 'mean'),
             avg_misses=(
                 'l1d_misses (actual)',
+                'mean'
+            ),
+            avg_loads=(
+                'l1d_loads (actual)',
                 'mean'
             )
         )

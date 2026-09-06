@@ -24,12 +24,23 @@ def plot_reorder(naive_df, reorder_df):
     comparison_df['naive_mpki'] = naive_df['mpki'].values
     comparison_df['reorder_mpki'] = reorder_df['mpki'].values
 
+    comparison_df['naive_miss_rate'] = naive_df['miss_rate'].values
+    comparison_df['reorder_miss_rate'] = reorder_df['miss_rate'].values
+
     comparison_df['naive_misses'] = (
         naive_df['l1d_misses (combined)'].values
     )
 
     comparison_df['reorder_misses'] = (
         reorder_df['l1d_misses (actual)'].values
+    )
+
+    comparison_df['naive_loads'] = (
+        naive_df['l1d_loads (combined)'].values
+    )
+
+    comparison_df['reorder_loads'] = (
+        reorder_df['l1d_loads (actual)'].values
     )
 
     comparison_df['naive_instructions'] = (
@@ -53,6 +64,15 @@ def plot_reorder(naive_df, reorder_df):
             - comparison_df['reorder_mpki']
         )
         / comparison_df['naive_mpki']
+    ) * 100
+
+    comparison_df['miss_rate_reduction'] = (
+        (
+            comparison_df['naive_miss_rate']
+            - comparison_df['reorder_miss_rate']
+        )
+        .div(comparison_df['naive_miss_rate'])
+        .where(comparison_df['naive_miss_rate'] != 0, 0.0)
     ) * 100
 
     # Cache miss reduction percentage

@@ -96,7 +96,10 @@ def preprocess_data():
                     'instructions (combined)',
 
                 'l1d_misses':
-                    'l1d_misses (combined)'
+                    'l1d_misses (combined)',
+
+                'l1d_loads':
+                    'l1d_loads (combined)'
             },
             inplace=True
         )
@@ -109,6 +112,12 @@ def preprocess_data():
     naive_df['mpki'] = (
         naive_df['l1d_misses (combined)'] * 1000
     ) / naive_df['instructions (combined)']
+
+    naive_df['miss_rate'] = (
+        naive_df['l1d_misses (combined)']
+        .div(naive_df['l1d_loads (combined)'])
+        .where(naive_df['l1d_loads (combined)'] > 0, 0.0)
+    )
 
     # --------------------------------------------------------
     # Naive lookup maps
@@ -124,6 +133,12 @@ def preprocess_data():
         naive_df
         .set_index('matrix_size')
         ['l1d_misses (combined)']
+    )
+
+    naive_loads_map = (
+        naive_df
+        .set_index('matrix_size')
+        ['l1d_loads (combined)']
     )
 
 
@@ -154,11 +169,25 @@ def preprocess_data():
         )
         df['l1d_misses (actual)'] = df['l1d_misses (actual)'].clip(lower=0)
 
+        # Actual L1-D loads
+        df['l1d_loads (actual)'] = (
+            df['l1d_loads (combined)']
+            - df['matrix_size'].map(naive_loads_map)
+        )
+        df['l1d_loads (actual)'] = df['l1d_loads (actual)'].clip(lower=0)
+
         # MPKI
         df['mpki'] = (
             df['l1d_misses (actual)'] * 1000
         ) / df['instructions (actual)']
         df['mpki'] = df['mpki'].clip(lower=0)
+
+        # L1-D miss rate
+        df['miss_rate'] = (
+            df['l1d_misses (actual)']
+            .div(df['l1d_loads (actual)'])
+            .where(df['l1d_loads (actual)'] > 0, 0.0)
+        )
 
 
     return {
