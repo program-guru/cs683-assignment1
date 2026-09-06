@@ -8,7 +8,6 @@ void conv_unroll(const float* in, float* out, const float* ker,
 
     // Special optimization for K = 5
     if (K == 5) {
-
         // Store kernel values once
         const float k00 = ker[0];
         const float k01 = ker[1];
@@ -83,8 +82,9 @@ void conv_unroll(const float* in, float* out, const float* ker,
 
         return;
     }
+
     // Special optimization for K = 3
-    else if (K == 3){
+    if (K == 3){
         const float k00 = ker[0];
         const float k01 = ker[1];
         const float k02 = ker[2];
@@ -99,7 +99,6 @@ void conv_unroll(const float* in, float* out, const float* ker,
 
         for (int oy = 0; oy < H; ++oy) {
             for (int ox = 0; ox < W; ++ox) {
-
                 const int base = oy * in_stride + ox;
 
                 float acc = 0.0f;
@@ -123,17 +122,21 @@ void conv_unroll(const float* in, float* out, const float* ker,
         return;
     }
 
-    // Generic version for other K values
-    for (int i = 0; i < H * W; ++i) out[i] = 0.0f; 
-
-    for (int ky = 0; ky < K; ++ky) {
-        for (int kx = 0; kx < K; ++kx) {
-            const float w = ker[ky * K + kx];   
-            for (int oy = 0; oy < H; ++oy) {
-                for (int ox = 0; ox < W; ++ox) {
-                    out[oy * W + ox] += w * in[(oy + ky) * in_stride + (ox + kx)];
+    for (int oy = 0; oy < H; ++oy) {
+        for (int ox = 0; ox < W; ++ox) {
+            float acc = 0.0f;
+            for (int ky = 0; ky < K; ++ky) {
+                const int kend = K - (K % 3);
+                for (int kx = 0; kx < kend; kx += 3) {
+                    acc += in[(oy + ky) * in_stride + (ox + kx)] * ker[ky * K + kx];
+                    acc += in[(oy + ky) * in_stride + (ox + kx + 1)] * ker[ky * K + kx + 1];
+                    acc += in[(oy + ky) * in_stride + (ox + kx + 2)] * ker[ky * K + kx + 2];
+                }
+                for (int kx = kend; kx < K; ++kx) {
+                    acc += in[(oy + ky) * in_stride + (ox + kx)] * ker[ky * K + kx];
                 }
             }
+            out[oy * W + ox] = acc;
         }
     }
 }
