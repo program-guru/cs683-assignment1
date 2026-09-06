@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
+from visualizations.color_scale import comparison_colors
 
 def plot_tile(naive_df, tile_df):
 
@@ -194,7 +195,8 @@ def plot_tile(naive_df, tile_df):
         speedup_heatmap,
         annot=True,
         fmt='.2f',
-        cmap='YlGnBu',
+        cmap='RdYlGn',
+        center=1.0,
         ax=axes[0, 2]
     )
 
@@ -207,31 +209,36 @@ def plot_tile(naive_df, tile_df):
     axes[0, 2].set_ylabel('Tile Size')
 
     # =========================================================
-    # 4. CACHE MISS INCREASE HEATMAP
+    # 4. L1-D MISS RATE HEATMAP
     # =========================================================
 
-    miss_heatmap = tile_df.pivot(
+    miss_rate_heatmap = tile_df.pivot(
         index='tile_size',
         columns='matrix_size',
-        values='miss_increase'
+        values='miss_rate'
     )
 
-    miss_heatmap = miss_heatmap.reindex(
+    miss_rate_heatmap = miss_rate_heatmap.reindex(
         index=tile_order,
         columns=matrix_order
     )
 
+    # Convert to percentage for display
+    miss_rate_heatmap = miss_rate_heatmap * 100
+
     sns.heatmap(
-        miss_heatmap,
+        miss_rate_heatmap,
         annot=True,
-        fmt='.1f',
-        cmap='Reds',
-        center=0,
-        ax=axes[1, 0]
+        fmt='.3f',
+        cmap='RdYlGn_r',
+        ax=axes[1, 0],
+        cbar_kws={
+            'label': 'L1-D Miss Rate (%)'
+        }
     )
 
     axes[1, 0].set_title(
-        'L1-D Cache Miss Increase vs Naive',
+        'L1-D Miss Rate',
         fontweight='bold'
     )
 
@@ -247,6 +254,9 @@ def plot_tile(naive_df, tile_df):
         x='tile_size',
         y='avg_speedup',
         order=tile_order,
+        palette=list(comparison_colors(avg_tile['avg_speedup'], center=1.0)),
+        hue='tile_size',
+        legend=False,
         ax=axes[1, 1]
     )
 
@@ -286,6 +296,12 @@ def plot_tile(naive_df, tile_df):
 
     axes[1, 2].set_xlabel('Matrix Size')
     axes[1, 2].set_ylabel('Speedup')
+    
+    axes[1, 2].set_xticks(matrix_order)
+
+    axes[1, 2].set_xticklabels(
+        matrix_order
+    )
 
     axes[1, 2].legend(
         title='Tile Size',

@@ -2,6 +2,7 @@ from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from visualizations.color_scale import comparison_colors
 
 
 def plot_simd(naive_df, simd_df):
@@ -183,6 +184,10 @@ def plot_simd(naive_df, simd_df):
         comparison_df['simd128_speedup'],
         marker='o',
         linewidth=2.5,
+        color=comparison_colors(
+            comparison_df['simd128_speedup'],
+            center=1.0
+        )[0],
         label='SIMD 128-bit'
     )
 
@@ -191,6 +196,10 @@ def plot_simd(naive_df, simd_df):
         comparison_df['simd256_speedup'],
         marker='s',
         linewidth=2.5,
+        color=comparison_colors(
+            comparison_df['simd256_speedup'],
+            center=1.0
+        )[0],
         label='SIMD 256-bit'
     )
 
@@ -319,6 +328,9 @@ def plot_simd(naive_df, simd_df):
         comparison_df['simd128_instruction_reduction'],
         marker='o',
         linewidth=2.5,
+        color=comparison_colors(
+            comparison_df['simd128_instruction_reduction']
+        )[0],
         label='SIMD 128-bit'
     )
 
@@ -327,6 +339,9 @@ def plot_simd(naive_df, simd_df):
         comparison_df['simd256_instruction_reduction'],
         marker='s',
         linewidth=2.5,
+        color=comparison_colors(
+            comparison_df['simd256_instruction_reduction']
+        )[0],
         label='SIMD 256-bit'
     )
 
@@ -354,39 +369,42 @@ def plot_simd(naive_df, simd_df):
 
 
     # ========================================================
-    # 5. Cache Miss Change
+    # 5. L1-D Miss Rate vs Matrix Size
     # ========================================================
 
     axes[1, 1].plot(
         comparison_df['matrix_size'],
-        comparison_df['simd128_miss_change'],
+        comparison_df['naive_miss_rate'] * 100,
         marker='o',
+        linewidth=2.5,
+        label='Naive'
+    )
+
+    axes[1, 1].plot(
+        comparison_df['matrix_size'],
+        comparison_df['simd128_miss_rate'] * 100,
+        marker='s',
         linewidth=2.5,
         label='SIMD 128-bit'
     )
 
     axes[1, 1].plot(
         comparison_df['matrix_size'],
-        comparison_df['simd256_miss_change'],
-        marker='s',
+        comparison_df['simd256_miss_rate'] * 100,
+        marker='^',
         linewidth=2.5,
         label='SIMD 256-bit'
     )
 
-    axes[1, 1].axhline(
-        y=0,
-        linestyle='--',
-        linewidth=1.5
-    )
-
     axes[1, 1].set_title(
-        'L1-D Cache Miss Change vs Naive',
+        'L1-D Miss Rate vs Matrix Size',
         fontweight='bold'
     )
 
     axes[1, 1].set_xlabel('Matrix Size')
+
     axes[1, 1].set_ylabel(
-        'Cache Miss Change (%)'
+        'L1-D Miss Rate (%)'
     )
 
     axes[1, 1].set_xticks(
@@ -394,7 +412,6 @@ def plot_simd(naive_df, simd_df):
     )
 
     axes[1, 1].legend()
-
 
     # ========================================================
     # 6. Heatmap
@@ -420,7 +437,8 @@ def plot_simd(naive_df, simd_df):
         heatmap_data,
         annot=True,
         fmt='.2f',
-        cmap='YlGnBu',
+        cmap='RdYlGn',
+        center=1.0,
         linewidths=0.5,
         ax=axes[1, 2],
         cbar_kws={'label': 'Speedup'}

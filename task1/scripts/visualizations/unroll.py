@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
+from visualizations.color_scale import comparison_colors
 
 def plot_unroll(naive_df, unroll_df):
 
@@ -142,6 +143,9 @@ def plot_unroll(naive_df, unroll_df):
         data=comparison_df,
         x='matrix_size',
         y='speedup',
+        palette=list(comparison_colors(comparison_df['speedup'], center=1.0)),
+        hue='matrix_size',
+        legend=False,
         ax=axes[0, 0]
     )
 
@@ -188,6 +192,10 @@ def plot_unroll(naive_df, unroll_df):
         [i + width / 2 for i in x],
         comparison_df['unroll_mpki'],
         width,
+        color=comparison_colors(
+            comparison_df['unroll_mpki'],
+            lower_is_better=True
+        ),
         label='Unrolled'
     )
 
@@ -210,37 +218,38 @@ def plot_unroll(naive_df, unroll_df):
     axes[0, 1].legend()
 
     # ============================================================
-    # 3. MPKI Reduction
+    # 3. L1-D Miss Rate vs Matrix Size
     # ============================================================
 
-    sns.barplot(
-        data=comparison_df,
-        x='matrix_size',
-        y='mpki_reduction',
-        ax=axes[1, 0]
+    axes[1, 0].plot(
+        comparison_df['matrix_size'],
+        comparison_df['naive_miss_rate'] * 100,
+        marker='o',
+        linewidth=2.5,
+        label='Naive'
     )
 
-    axes[1, 0].axhline(
-        y=0,
-        linestyle='--',
-        linewidth=1.5
+    axes[1, 0].plot(
+        comparison_df['matrix_size'],
+        comparison_df['unroll_miss_rate'] * 100,
+        marker='s',
+        linewidth=2.5,
+        label='Unrolled'
     )
 
     axes[1, 0].set_title(
-        'L1-D MPKI Reduction from Loop Unrolling',
+        'L1-D Miss Rate vs Matrix Size',
         fontweight='bold'
     )
 
     axes[1, 0].set_xlabel('Matrix Size')
-    axes[1, 0].set_ylabel('MPKI Reduction (%)')
+    axes[1, 0].set_ylabel('L1-D Miss Rate (%)')
 
-    # Add percentages
-    for container in axes[1, 0].containers:
-        axes[1, 0].bar_label(
-            container,
-            fmt='%.1f%%',
-            padding=3
-        )
+    axes[1, 0].set_xticks(
+        comparison_df['matrix_size']
+    )
+
+    axes[1, 0].legend()
 
     # ============================================================
     # 4. Instruction Count Comparison

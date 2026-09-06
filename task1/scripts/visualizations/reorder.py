@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
+from visualizations.color_scale import comparison_colors
 
 
 def plot_reorder(naive_df, reorder_df):
@@ -12,6 +13,7 @@ def plot_reorder(naive_df, reorder_df):
 
     naive_df = naive_df.sort_values('matrix_size').copy()
     reorder_df = reorder_df.sort_values('matrix_size').copy()
+    matrix_order = sorted(reorder_df['matrix_size'].unique())
 
     # ============================================================
     # Create comparison DataFrame
@@ -123,6 +125,15 @@ def plot_reorder(naive_df, reorder_df):
         data=comparison_df,
         x='matrix_size',
         y='speedup',
+        order=matrix_order,
+        palette=list(
+            comparison_colors(
+                comparison_df['speedup'],
+                center=1.0
+            )
+        ),
+        hue='matrix_size',
+        legend=False,
         ax=axes[0, 0]
     )
 
@@ -169,6 +180,10 @@ def plot_reorder(naive_df, reorder_df):
         [i + width / 2 for i in x],
         comparison_df['reorder_mpki'],
         width,
+        color=comparison_colors(
+            comparison_df['reorder_mpki'],
+            lower_is_better=True
+        ),
         label='Reordered'
     )
 
@@ -189,37 +204,38 @@ def plot_reorder(naive_df, reorder_df):
     axes[0, 1].legend()
 
     # ============================================================
-    # 3. MPKI Reduction
+    # 3. L1-D Miss Rate vs Matrix Size
     # ============================================================
 
-    sns.barplot(
-        data=comparison_df,
-        x='matrix_size',
-        y='mpki_reduction',
-        ax=axes[1, 0]
+    axes[1, 0].plot(
+        comparison_df['matrix_size'],
+        comparison_df['naive_miss_rate'] * 100,
+        marker='o',
+        linewidth=2.5,
+        label='Naive'
     )
 
-    axes[1, 0].axhline(
-        y=0,
-        linestyle='--',
-        linewidth=1.5
+    axes[1, 0].plot(
+        comparison_df['matrix_size'],
+        comparison_df['reorder_miss_rate'] * 100,
+        marker='s',
+        linewidth=2.5,
+        label='Reordered'
     )
 
     axes[1, 0].set_title(
-        'L1-D MPKI Reduction from Loop Reordering',
+        'L1-D Miss Rate vs Matrix Size',
         fontweight='bold'
     )
 
     axes[1, 0].set_xlabel('Matrix Size')
-    axes[1, 0].set_ylabel('MPKI Reduction (%)')
+    axes[1, 0].set_ylabel('L1-D Miss Rate (%)')
+    
+    axes[1, 0].set_xticks(matrix_order)
 
-    # Add percentages
-    for container in axes[1, 0].containers:
-        axes[1, 0].bar_label(
-            container,
-            fmt='%.1f%%',
-            padding=3
-        )
+    axes[1, 0].legend()
+
+    axes[1, 0].grid(True)
 
     # ============================================================
     # 4. Instruction Count Comparison

@@ -13,6 +13,7 @@ def plot_naive(naive_df):
     naive_df = naive_df.sort_values(
         'matrix_size'
     ).copy()
+    
 
     # ============================================================
     # Display data
@@ -112,6 +113,18 @@ def plot_naive(naive_df):
 
     axes[2].set_xlabel('Matrix Size')
     axes[2].set_ylabel('MPKI')
+    axes[2].set_xticks(
+            matrix_sizes
+    )
+    # =========================================================
+    # Format axes
+    # =========================================================
+
+    for ax in axes.flat:
+        ax.tick_params(
+            axis='x',
+            rotation=45
+        )
 
     # ============================================================
     # Overall Title
