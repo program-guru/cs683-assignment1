@@ -3,14 +3,13 @@
 
 #include "convolution.h"
 
-void conv_simd(const float* in, float* out, const float* ker,
+void conv_simd(const float *in, float *out, const float *ker,
                int H, int W, int K) {
     // TODO(student): replace this placeholder with your AVX2 implementation.
     const int p = K / 2;
     const int in_stride = W + 2 * p;
     for (int oy = 0; oy < H; ++oy) {
-        int ox = 0;
-        for (; ox + 7 < W; ox += 8) {
+        for (int ox = 0; ox + 7 < W; ox += 8) {
             __m256 acc = _mm256_setzero_ps();
             for (int ky = 0; ky < K; ++ky) {
                 for (int kx = 0; kx < K; ++kx) {
@@ -24,22 +23,6 @@ void conv_simd(const float* in, float* out, const float* ker,
             }
             // Store 8 output values
             _mm256_storeu_ps(&out[oy * W + ox], acc);
-        }
-        // Handle remaining pixels
-        for (; ox < W; ++ox) {
-
-            float acc = 0.0f;
-
-            for (int ky = 0; ky < K; ++ky) {
-                for (int kx = 0; kx < K; ++kx) {
-
-                    acc +=
-                        in[(oy + ky) * in_stride + (ox + kx)]
-                        * ker[ky * K + kx];
-                }
-            }
-
-            out[oy * W + ox] = acc;
         }
     }
 }
