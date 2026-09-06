@@ -264,18 +264,12 @@ def plot_tile(naive_df, tile_df):
     # 6. TILE SIZE vs SPEEDUP
     # =========================================================
 
-    plot6_df = tile_df.copy()
-
-    plot6_df['matrix_size'] = (
-        plot6_df['matrix_size'].astype(str)
-    )
-
     sns.lineplot(
-        data=plot6_df,
-        x='tile_size',
+        data=tile_df,
+        x='matrix_size',
         y='speedup',
-        hue='matrix_size',
-        hue_order=matrix_order_str,
+        hue='tile_size',
+        hue_order=tile_order,
         marker='o',
         ax=axes[1, 2]
     )
@@ -285,28 +279,11 @@ def plot_tile(naive_df, tile_df):
         fontweight='bold'
     )
 
-    axes[1, 2].set_xlabel('Tile Size')
+    axes[1, 2].set_xlabel('Matrix Size')
     axes[1, 2].set_ylabel('Speedup')
 
-    # Logarithmic spacing because tile sizes typically
-    # increase geometrically, but the actual values are
-    # obtained from the dataset.
-
-    axes[1, 2].set_xscale(
-        'log',
-        base=2
-    )
-
-    axes[1, 2].set_xticks(
-        tile_order
-    )
-
-    axes[1, 2].set_xticklabels(
-        [str(x) for x in tile_order]
-    )
-
     axes[1, 2].legend(
-        title='Matrix Size',
+        title='Tile Size',
         bbox_to_anchor=(1.02, 1),
         loc='upper left',
         fontsize=8
