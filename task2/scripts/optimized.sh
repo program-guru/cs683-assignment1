@@ -15,20 +15,19 @@ MATRIX_SIZES=(256 512 752 1024 1256 1504 1752 2048)
 # Restore hardware prefetcher and source file on exit
 # =========================================================
 
-cleanup() {
-    echo ""
-    echo "=============================================="
-    echo "Enabling / restoring hardware prefetcher"
-    echo "=============================================="
+# cleanup() {
+#     echo ""
+#     echo "=============================================="
+#     echo "Enabling / restoring hardware prefetcher"
+#     echo "=============================================="
 
-    bash "$RESTORE_MSR"
-    git checkout -- "$SOURCE"
+#     bash "$RESTORE_MSR"
 
-    echo "Hardware prefetcher and source file restored."
-}
+#     echo "Hardware prefetcher and source file restored."
+# }
 
-# Make sure cleanup runs when script exits, including Ctrl+C
-trap cleanup EXIT
+# # Make sure cleanup runs when script exits, including Ctrl+C
+# trap cleanup EXIT
 
 
 # =========================================================
@@ -71,8 +70,6 @@ echo "matrix_size,naive_instructions,optimized_instructions,naive_time,optimized
 
 for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
         
-    # Reset source file to clean template before applying mutations
-    git checkout -- "$SOURCE"
 
 
 
@@ -136,7 +133,7 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
 
     SPEEDUP=$(grep '^optimized' "$OPTIMIZED_OUTPUT" \
         | awk '{gsub(/x$/, "", $5); print $5}')
-    L1D_MISSES=$(grep 'cpu_core/l1d_miss.load' "$OUTPUT" \
+    L1D_MISSES=$(grep 'cpu_core/l1d_miss.load' "$OPTIMIZED_OUTPUT" \
             | sed 's/,//g' \
             | awk '{print $1}')
 
