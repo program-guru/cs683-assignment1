@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
-from visualizations.color_scale import comparison_colors
+from visualizations.color_scale import comparison_colors, comparison_line
 
 
 def plot_reorder(naive_df, reorder_df):
@@ -182,6 +182,7 @@ def plot_reorder(naive_df, reorder_df):
         width,
         color=comparison_colors(
             comparison_df['reorder_mpki'],
+            baseline=comparison_df['naive_mpki'],
             lower_is_better=True
         ),
         label='Reordered'
@@ -215,12 +216,14 @@ def plot_reorder(naive_df, reorder_df):
         label='Naive'
     )
 
-    axes[1, 0].plot(
+    comparison_line(
+        axes[1, 0],
         comparison_df['matrix_size'],
         comparison_df['reorder_miss_rate'] * 100,
+        comparison_df['naive_miss_rate'] * 100,
+        label='Reordered',
         marker='s',
-        linewidth=2.5,
-        label='Reordered'
+        lower_is_better=True
     )
 
     axes[1, 0].set_title(
@@ -249,12 +252,14 @@ def plot_reorder(naive_df, reorder_df):
         label='Naive'
     )
 
-    axes[1, 1].plot(
+    comparison_line(
+        axes[1, 1],
         comparison_df['matrix_size'],
         comparison_df['reorder_instructions'],
+        comparison_df['naive_instructions'],
+        label='Reordered',
         marker='s',
-        linewidth=2.5,
-        label='Reordered'
+        lower_is_better=True
     )
 
     axes[1, 1].set_title(
