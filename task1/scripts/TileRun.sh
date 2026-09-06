@@ -6,7 +6,7 @@ SOURCE="$PROJECT_DIR/src/conv_tile.cpp"
 CSV="$PROJECT_DIR/results/tile_results.csv"
 
 MATRIX_SIZES=(256 512 752 1024 1256 1504 1752 2048)
-TILE_SIZES=(8 16 32 64 128 256 512 1024)
+TILE_SIZES=(8 16 32 64 100)
 
 
 # =========================================================
@@ -60,66 +60,73 @@ for MATRIXSIZE in "${MATRIX_SIZES[@]}"; do
         fi
 
 
-        # -------------------------------------------------
-        # Run perf
-        # -------------------------------------------------
+        while true; do
+            # -------------------------------------------------
+            # Run perf
+            # -------------------------------------------------
 
-        OUTPUT=$(mktemp)
+            OUTPUT=$(mktemp)
 
-        sudo perf stat \
-            -e cpu_core/cycles/ \
-            -e cpu_core/instructions/ \
-            -e cpu_core/l1d_miss.load/ \
-            "$PROJECT_DIR/bin/conv" tile "$MATRIXSIZE" "$MATRIXSIZE" 9 50 \
-            > "$OUTPUT" 2>&1
-
-
-        # -------------------------------------------------
-        # Display output
-        # -------------------------------------------------
-
-        cat "$OUTPUT"
+            sudo perf stat \
+                -e cpu_core/cycles/ \
+                -e cpu_core/instructions/ \
+                -e cpu_core/l1d_miss.load/ \
+                "$PROJECT_DIR/bin/conv" tile "$MATRIXSIZE" "$MATRIXSIZE" 7 50 \
+                > "$OUTPUT" 2>&1
 
 
-        # -------------------------------------------------
-        # Extract instructions
-        # -------------------------------------------------
+            # -------------------------------------------------
+            # Display output
+            # -------------------------------------------------
 
-        INSTRUCTIONS=$(grep 'cpu_core/instructions' "$OUTPUT" \
-            | sed 's/,//g' \
-            | awk '{print $1}')
+            cat "$OUTPUT"
 
 
-        # -------------------------------------------------
-        # Extract L1-D misses
-        # -------------------------------------------------
+            # -------------------------------------------------
+            # Extract instructions
+            # -------------------------------------------------
 
-        L1D_MISSES=$(grep 'cpu_core/l1d_miss.load' "$OUTPUT" \
-            | sed 's/,//g' \
-            | awk '{print $1}')
-
-
-        # -------------------------------------------------
-        # Extract speedup
-        # -------------------------------------------------
-
-        SPEEDUP=$(grep '^tile' "$OUTPUT" \
-            | awk '{gsub(/x$/, "", $5); print $5}')
+            INSTRUCTIONS=$(grep 'cpu_core/instructions' "$OUTPUT" \
+                | sed 's/,//g' \
+                | awk '{print $1}')
 
 
-        # -------------------------------------------------
-        # Save to CSV
-        # -------------------------------------------------
+            # -------------------------------------------------
+            # Extract L1-D misses
+            # -------------------------------------------------
 
-        echo "$MATRIXSIZE,$TILESIZE,$INSTRUCTIONS,$L1D_MISSES,$SPEEDUP" >> "$CSV"
+            L1D_MISSES=$(grep 'cpu_core/l1d_miss.load' "$OUTPUT" \
+                | sed 's/,//g' \
+                | awk '{print $1}')
+
+
+            # -------------------------------------------------
+            # Extract speedup
+            # -------------------------------------------------
+
+            SPEEDUP=$(grep '^tile' "$OUTPUT" \
+                | awk '{gsub(/x$/, "", $5); print $5}')
+
+
+            # -------------------------------------------------
+            # Save to CSV
+            # -------------------------------------------------
+
+            if [[ "$INSTRUCTIONS" =~ ^[0-9]+$ && "$L1D_MISSES" =~ ^[0-9]+$ ]]; then
+                echo "$MATRIXSIZE,$TILESIZE,$INSTRUCTIONS,$L1D_MISSES,$SPEEDUP" >> "$CSV"
+                rm -f "$OUTPUT"
+                break
+            else
+                echo "Invalid instructions or L1-D misses value; rerunning matrix size $MATRIXSIZE, tile size $TILESIZE"
+                rm -f "$OUTPUT"
+            fi
+        done
 
         echo ""
         echo "Captured:"
         echo "  Instructions : $INSTRUCTIONS"
         echo "  L1-D misses  : $L1D_MISSES"
         echo "  Speedup      : $SPEEDUP"
-
-        rm -f "$OUTPUT"
 
     done
 
