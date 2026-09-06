@@ -2,7 +2,6 @@ from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from visualizations.color_scale import comparison_colors
 
 
 def plot_simd(naive_df, simd_df):
@@ -169,6 +168,11 @@ def plot_simd(naive_df, simd_df):
 
     sns.set_theme(style="whitegrid")
 
+    simd128_color, simd256_color = sns.color_palette(
+        'colorblind',
+        n_colors=2
+    )
+
     fig, axes = plt.subplots(
         2, 3,
         figsize=(21, 12)
@@ -184,10 +188,7 @@ def plot_simd(naive_df, simd_df):
         comparison_df['simd128_speedup'],
         marker='o',
         linewidth=2.5,
-        color=comparison_colors(
-            comparison_df['simd128_speedup'],
-            center=1.0
-        )[0],
+        color=simd128_color,
         label='SIMD 128-bit'
     )
 
@@ -196,10 +197,7 @@ def plot_simd(naive_df, simd_df):
         comparison_df['simd256_speedup'],
         marker='s',
         linewidth=2.5,
-        color=comparison_colors(
-            comparison_df['simd256_speedup'],
-            center=1.0
-        )[0],
+        color=simd256_color,
         label='SIMD 256-bit'
     )
 
@@ -328,9 +326,7 @@ def plot_simd(naive_df, simd_df):
         comparison_df['simd128_instruction_reduction'],
         marker='o',
         linewidth=2.5,
-        color=comparison_colors(
-            comparison_df['simd128_instruction_reduction']
-        )[0],
+        color=simd128_color,
         label='SIMD 128-bit'
     )
 
@@ -339,9 +335,7 @@ def plot_simd(naive_df, simd_df):
         comparison_df['simd256_instruction_reduction'],
         marker='s',
         linewidth=2.5,
-        color=comparison_colors(
-            comparison_df['simd256_instruction_reduction']
-        )[0],
+        color=simd256_color,
         label='SIMD 256-bit'
     )
 

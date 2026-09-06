@@ -69,25 +69,25 @@ def plot_naive(naive_df):
     )
 
     # ============================================================
-    # 2. L1-D Misses vs Matrix Size
+    # 2. L1-D Miss Rate vs Matrix Size
     # ============================================================
 
     sns.lineplot(
         data=naive_df,
         x='matrix_size',
-        y='l1d_misses (combined)',
+        y=naive_df['miss_rate'] * 100,
         marker='o',
         linewidth=2.5,
         ax=axes[1]
     )
 
     axes[1].set_title(
-        'Naive: L1-D Misses vs Matrix Size',
+        'Naive: L1-D Miss Rate vs Matrix Size',
         fontweight='bold'
     )
 
     axes[1].set_xlabel('Matrix Size')
-    axes[1].set_ylabel('L1-D Misses')
+    axes[1].set_ylabel('L1-D Miss Rate (%)')
 
     axes[1].set_xticks(
         matrix_sizes

@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
-from visualizations.color_scale import comparison_colors
+from visualizations.color_scale import comparison_colors, comparison_line
 
 def plot_unroll(naive_df, unroll_df):
 
@@ -194,6 +194,7 @@ def plot_unroll(naive_df, unroll_df):
         width,
         color=comparison_colors(
             comparison_df['unroll_mpki'],
+            baseline=comparison_df['naive_mpki'],
             lower_is_better=True
         ),
         label='Unrolled'
@@ -229,12 +230,14 @@ def plot_unroll(naive_df, unroll_df):
         label='Naive'
     )
 
-    axes[1, 0].plot(
+    comparison_line(
+        axes[1, 0],
         comparison_df['matrix_size'],
         comparison_df['unroll_miss_rate'] * 100,
+        comparison_df['naive_miss_rate'] * 100,
+        label='Unrolled',
         marker='s',
-        linewidth=2.5,
-        label='Unrolled'
+        lower_is_better=True
     )
 
     axes[1, 0].set_title(
@@ -263,12 +266,14 @@ def plot_unroll(naive_df, unroll_df):
         label='Naive'
     )
 
-    axes[1, 1].plot(
+    comparison_line(
+        axes[1, 1],
         comparison_df['matrix_size'],
         comparison_df['unroll_instructions'],
+        comparison_df['naive_instructions'],
+        label='Unrolled',
         marker='s',
-        linewidth=2.5,
-        label='Unrolled'
+        lower_is_better=True
     )
 
     axes[1, 1].set_title(

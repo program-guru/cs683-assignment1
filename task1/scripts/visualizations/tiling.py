@@ -114,6 +114,31 @@ def plot_tile(naive_df, tile_df):
         plot_df['tile_size'].astype(str)
     )
 
+    mpki_plot_df = pd.concat(
+        [
+            naive_df[
+                ['matrix_size', 'mpki']
+            ].assign(
+                implementation='Naive'
+            ),
+            tile_df[
+                ['matrix_size', 'mpki', 'tile_size']
+            ].assign(
+                implementation=lambda data: (
+                    'Tile ' + data['tile_size'].astype(str)
+                )
+            )[
+                ['matrix_size', 'mpki', 'implementation']
+            ]
+        ],
+        ignore_index=True
+    )
+
+    implementation_order = [
+        'Naive',
+        *[f'Tile {tile_size}' for tile_size in tile_order]
+    ]
+
     tile_order_str = [
         str(x) for x in tile_order
     ]
@@ -154,11 +179,11 @@ def plot_tile(naive_df, tile_df):
     # =========================================================
 
     sns.barplot(
-        data=plot_df,
+        data=mpki_plot_df,
         x='matrix_size',
         y='mpki',
-        hue='tile_size',
-        hue_order=tile_order_str,
+        hue='implementation',
+        hue_order=implementation_order,
         order=matrix_order_str,
         ax=axes[0, 1]
     )
@@ -172,7 +197,7 @@ def plot_tile(naive_df, tile_df):
     axes[0, 1].set_ylabel('L1-D MPKI')
 
     axes[0, 1].legend(
-        title='Tile Size',
+        title='Implementation',
         fontsize=8
     )
 
