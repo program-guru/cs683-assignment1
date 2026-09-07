@@ -4,7 +4,7 @@
 
 ## Overview
 
-This repository bridges the gap between high-level algorithms and bare-metal execution by deploying hardware-aware optimizations for two foundational computational engines: 2D Convolution and Single-Precision Matrix Multiplication (SGEMM). Instead of letting naive code bottleneck on memory bandwidth, these implementations bend silicon to their will—transforming cache-thrashing loops into streamlined pipelines through 256-bit AVX2 vectorization, precise temporal/spatial data reuse, and aggressive memory-latency hiding.
+This repository bridges the gap between high-level algorithms and bare-metal execution by deploying hardware aware optimizations for two foundational computational engines: 2D Convolution and Single-Precision Matrix Multiplication (SGEMM). Instead of letting naive code bottleneck on memory bandwidth, these implementations bend silicon to their will transforming cache thrashing loops into streamlined pipelines through 256-bit AVX2 vectorization, precise temporal/spatial data reuse, and aggressive memory-latency hiding.
 
 All experiments, benchmarking, and hardware performance counter profiling (`perf`) require an Intel-based x86 architecture with AVX2 and FMA support.
 
