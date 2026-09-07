@@ -1,18 +1,36 @@
-# CS683 PA-1: Hardware-Conscious Performance Engineering
+# CS683: Programming Assignment 1 - Dhurandhar Programming
 
-This assignment consists of two parts. Both start from a correct-but-naive C++ kernel and ask you
-to improve its performance by *thinking about the hardware*: the cache hierarchy, instruction-level
-parallelism, and the SIMD units of a modern x86 core.
+**Course:** CS683: Advanced Computer Architecture, Autumn 2026, IIT Bombay
 
-See the assignment [document](https://docs.google.com/document/d/1suURtM3WaensRvABVxlHZmhbbXe-g2v-sNi8gUfuojg/edit?usp=sharing)
-for the full problem statement.
+## Overview
 
-## Tasks
+This repository bridges the gap between high-level algorithms and bare-metal execution by deploying hardware-aware optimizations for two foundational computational engines: 2D Convolution and Single-Precision Matrix Multiplication (SGEMM). Instead of letting naive code bottleneck on memory bandwidth, these implementations bend silicon to their will—transforming cache-thrashing loops into streamlined pipelines through 256-bit AVX2 vectorization, precise temporal/spatial data reuse, and aggressive memory-latency hiding.
 
-| Task | Workload | Techniques | Instructions |
-|------|----------|------------|--------------|
-| 1 | 2D convolution | Loop reordering, loop unrolling, cache tiling, SIMD (AVX2) | [task1/README.md](task1/README.md) |
-| 2 | Matrix multiplication (SGEMM), injected into llama.cpp | SIMD (AVX2), cache blocking + software prefetching, combining everything | [task2/README.md](task2/README.md) |
+All experiments, benchmarking, and hardware performance counter profiling (`perf`) require an Intel-based x86 architecture with AVX2 and FMA support.
 
-Each task directory is self-contained: build instructions, the files you need to edit,
-grading, and submission requirements all live in that task's own README. Start there.
+---
+
+## Repository Architecture
+
+```text
+.
+├── task1/
+│   └── src/
+│       ├── conv_reorder.cpp           # Loop reordering for spatial locality
+│       ├── conv_unroll.cpp            # Loop unrolling for kernel weights
+│       ├── conv_simd.cpp              # 256-bit AVX2 vectorization
+│       ├── conv_tile.cpp              # L1-D cache blocking/tiling
+│       └── conv_optimized.cpp         # Combined SIMD + Unrolling kernel
+├── task2/
+│   └── src/
+│       ├── matmul_prefetch.cpp        # Prefetching experiments
+│       ├── matmul_simd.cpp            # AVX2 vs 128-bit SIMD comparisons
+│       └── matmul_optimized.cpp       # Blocked + Tiled + Vectorized + Prefetched SGEMM
+└── plots/                           
+   ├── task1_speedup_vs_size.png      # Speedup scaling across varying image dimensions
+   ├── task1_speedup_vs_kernel.png    # Performance impact across kernel sizes, highlighting peak 11.95x speedup
+   ├── task2_speedup_vs_size.png      # SGEMM speedup scaling across matrix dimensions (24x–28x peak)
+   ├── task2_prefetch_degree.png      # Memory latency hiding across lookahead distances (256–512 elements)
+   └── task2_prefetch_level.png       # Target cache level analysis (L3/LLC vs L0/L1 cache pollution)
+
+```
