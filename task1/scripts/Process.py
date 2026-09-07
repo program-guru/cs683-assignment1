@@ -40,13 +40,18 @@ def load_data():
     unroll_df = pd.read_csv(
         os.path.join(DATA_DIR, 'unroll_results.csv')
     )
+    
+    optimized_df = pd.read_csv(
+        os.path.join(DATA_DIR,'optimized_results.csv')
+    )
 
     return (
         naive_df,
         reorder_df,
         simd_df,
         tile_df,
-        unroll_df
+        unroll_df,
+        optimized_df
     )
 
 
@@ -61,8 +66,27 @@ def preprocess_data():
         reorder_df,
         simd_df,
         tile_df,
-        unroll_df
+        unroll_df,
+        optimized_df
     ) = load_data()
+    
+    # --------------------------------------------------------
+    # Optimized CSV metrics
+    # --------------------------------------------------------
+
+    optimized_df['mpki'] = (
+        optimized_df['l1d_misses'] * 1000
+    ) / optimized_df['instructions']
+
+
+    optimized_df['miss_rate'] = (
+        optimized_df['l1d_misses']
+        .div(optimized_df['l1d_loads'])
+        .where(
+            optimized_df['l1d_loads'] > 0,
+            0.0
+        )
+    )
 
 
     # --------------------------------------------------------
@@ -85,7 +109,8 @@ def preprocess_data():
         'reorder': reorder_df,
         'simd': simd_df,
         'tile': tile_df,
-        'unroll': unroll_df
+        'unroll': unroll_df,
+        'optimized': optimized_df
     }
 
     for name, df in all_dfs.items():
@@ -195,5 +220,6 @@ def preprocess_data():
         'reorder': reorder_df,
         'simd': simd_df,
         'tile': tile_df,
-        'unroll': unroll_df
+        'unroll': unroll_df,
+        'optimized': optimized_df
     }

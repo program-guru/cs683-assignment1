@@ -4,6 +4,7 @@ from visualizations.reorder import plot_reorder
 from visualizations.simd import plot_simd
 from visualizations.tiling import plot_tile
 from visualizations.unroll import plot_unroll
+from visualizations.optimize import plot_optimize
 
 
 # ============================================================
@@ -22,7 +23,7 @@ reorder_df = data['reorder']
 simd_df = data['simd']
 tile_df = data['tile']
 unroll_df = data['unroll']
-
+optimized_df = data['optimized']
 
 # ============================================================
 # Display Preprocessed Data
@@ -62,6 +63,12 @@ print("========================================")
 
 print(unroll_df)
 
+print("\n========================================")
+print("OPTIMIZED IMPLEMENTATIONS")
+print("========================================")
+
+print(optimized_df)
+
 
 # ============================================================
 # Generate Visualizations
@@ -84,4 +91,7 @@ plot_simd(
 )
 plot_naive(
     naive_df
+)
+plot_optimize(
+    optimized_df
 )
