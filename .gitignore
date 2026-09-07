@@ -1,3 +1,5 @@
 bin/
 solution/
 *.csv
+results/
+*.pyc
